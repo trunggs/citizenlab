@@ -79,6 +79,10 @@ class AppConfiguration < ApplicationRecord
     def instance
       first!
     end
+
+    def instance_exists?
+      all.exists?
+    end
   end
 
   # @return [AppConfiguration] self
@@ -145,6 +149,21 @@ class AppConfiguration < ApplicationRecord
 
     transport = Rails.env.test? ? 'http' : 'https'
     "#{transport}://#{host}"
+  end
+
+  def country_code
+    map_center_coordinates = settings('maps', 'map_center').values_at('lat', 'lng')
+    settings('core', 'country_code') || Geocoder.search(map_center_coordinates).first&.country_code
+  end
+
+  def update_setting(setting, value)
+    settings[settting] = value
+    update(settings: settings)
+  end
+
+  def update_core_setting(setting, value)
+    settings['core'][settting] = value
+    update(settings: settings)
   end
 
   private

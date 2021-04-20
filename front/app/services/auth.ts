@@ -11,7 +11,7 @@ import eventEmitter from 'utils/eventEmitter';
 export const authApiEndpoint = `${API_PATH}/users/me`;
 
 export interface IUserToken {
-  jwt: string;
+  token: string;
 }
 
 export function authUserStream() {
@@ -32,17 +32,17 @@ export function lockedFieldsStream() {
   });
 }
 
-export async function signIn(email: string, password: string) {
+export async function signIn(credentials) {
   try {
-    const bodyData = { auth: { email, password } };
+    const bodyData = { auth: credentials };
     const httpMethod: IHttpMethod = { method: 'POST' };
-    const { jwt } = await request<IUserToken>(
+    const { token } = await request<IUserToken>(
       `${API_PATH}/user_token`,
       bodyData,
       httpMethod,
       null
     );
-    setJwt(jwt);
+    setJwt(token);
     const authUser = await getAuthUserAsync();
     await streams.reset(authUser);
     return authUser;
@@ -53,22 +53,10 @@ export async function signIn(email: string, password: string) {
 }
 
 export async function signUp(
-  firstName: string,
-  lastName: string,
-  email: string,
-  password: string,
-  locale: Locale,
+  user,
   isInvitation: boolean | null | undefined,
-  token: string | undefined | null
+  inviteToken: string | undefined | null
 ) {
-  const innerBodyData = {
-    email,
-    password,
-    locale,
-    first_name: firstName,
-    last_name: lastName,
-  };
-
   const httpMethod: IHttpMethod = {
     method: 'POST',
   };
@@ -76,12 +64,17 @@ export async function signUp(
   try {
     const signUpEndpoint =
       isInvitation === true
-        ? `${API_PATH}/invites/by_token/${token}/accept`
+        ? `${API_PATH}/invites/by_token/${inviteToken}/accept`
         : `${API_PATH}/users`;
-    const bodyData = { [token ? 'invite' : 'user']: innerBodyData };
-    await request(signUpEndpoint, bodyData, httpMethod, null);
-    const authenticatedUser = await signIn(email, password);
-    return authenticatedUser;
+    const bodyData = { [inviteToken ? 'invite' : 'user']: user };
+    const { token, id } = await request(
+      signUpEndpoint,
+      bodyData,
+      httpMethod,
+      null
+    );
+    setJwt(token);
+    return id;
   } catch (error) {
     throw error;
   }

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_04_14_160251) do
+ActiveRecord::Schema.define(version: 2021_04_18_160260) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
@@ -984,6 +984,9 @@ ActiveRecord::Schema.define(version: 2021_04_14_160251) do
     t.boolean "verified", default: false, null: false
     t.string "mobile_phone_number"
     t.string "mobile_phone_country_code"
+    t.string "registration_method", default: "email", null: false
+    t.boolean "terms_and_conditions_accepted", default: false
+    t.boolean "privacy_policy_accepted", default: false
     t.index "lower((email)::text)", name: "users_unique_lower_email_idx", unique: true
     t.index ["email"], name: "index_users_on_email"
     t.index ["slug"], name: "index_users_on_slug", unique: true

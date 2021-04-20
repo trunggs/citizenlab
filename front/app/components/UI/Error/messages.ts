@@ -13,6 +13,10 @@ export default defineMessages({
     id: 'app.errors.generics.invalid',
     defaultMessage: 'This field contains an invalid value.',
   },
+  invalid_credentials: {
+    id: 'app.errors.generics.invalidCredentials',
+    defaultMessage: 'No account was found for the provided credentials.',
+  },
   unsupported_locales: {
     id: 'app.errors.generics.unsupported_locales',
     defaultMessage: 'This field does not support the current locale.',
@@ -21,6 +25,10 @@ export default defineMessages({
     id: 'app.errors.generics.taken',
     defaultMessage:
       'This field should be unique. Another instance with the same value already exists.',
+  },
+  accepted: {
+    id: 'app.errors.generics.accepted',
+    defaultMessage: 'Please accept the {field} before continuing.',
   },
   locale_blank: {
     id: 'app.errors.locale_blank',

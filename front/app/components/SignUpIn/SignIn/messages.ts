@@ -13,6 +13,18 @@ export default defineMessages({
     id: 'app.containers.SignIn.emailOrPhoneLabel',
     defaultMessage: 'Email or phone',
   },
+  usePhoneInstead: {
+    id: 'app.containers.SignIn.usePhoneInstead',
+    defaultMessage: 'Use Phone instead',
+  },
+  useEmailInstead: {
+    id: 'app.containers.SignIn.useEmailInstead',
+    defaultMessage: 'Use Email instead',
+  },
+  mobilePhoneLabel: {
+    id: 'app.containers.SignIn.mobilePhoneLabel',
+    defaultMessage: 'Phone Number',
+  },
   noEmailError: {
     id: 'app.containers.SignIn.noEmailError',
     defaultMessage: 'Please enter your email address',

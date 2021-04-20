@@ -73,7 +73,7 @@ class UserPolicy < ApplicationPolicy
   end
 
   def permitted_attributes
-    shared = [:first_name, :last_name, :email, :password, :avatar, :locale, custom_field_values: allowed_custom_field_keys, bio_multiloc: CL2_SUPPORTED_LOCALES]
+    shared = [:first_name, :last_name, :email, :password, :terms_and_conditions_accepted, :privacy_policy_accepted, :avatar, :locale, custom_field_values: allowed_custom_field_keys, bio_multiloc: CL2_SUPPORTED_LOCALES]
     admin? ? shared + role_permitted_params : shared
   end
 

@@ -1,16 +1,12 @@
 import React from 'react';
 import { isNilOrError } from 'utils/helperUtils';
+import { CLError } from 'typings';
 
 // hooks
 import useAppConfiguration from 'hooks/useAppConfiguration';
 
 // components
 import PasswordInputComponent from './PasswordInput';
-
-type PasswordErrors = {
-  minimumLengthError?: boolean;
-  emptyError?: boolean;
-};
 
 export interface Props {
   id: string;
@@ -21,7 +17,7 @@ export interface Props {
   autocomplete?: 'current-password' | 'new-password';
   placeholder?: string;
   isLoginPasswordInput?: boolean;
-  errors: PasswordErrors;
+  apiErrors: CLError[] | null;
 }
 
 const DEFAULT_MINIMUM_PASSWORD_LENGTH = 8;
@@ -44,7 +40,7 @@ const PasswordInput = ({
   autocomplete,
   placeholder,
   isLoginPasswordInput,
-  errors,
+  apiErrors,
 }: Props) => {
   const tenant = useAppConfiguration();
 
@@ -64,7 +60,7 @@ const PasswordInput = ({
         autocomplete={autocomplete}
         placeholder={placeholder}
         isLoginPasswordInput={isLoginPasswordInput}
-        errors={errors}
+        apiErrors={apiErrors}
       />
     );
   }

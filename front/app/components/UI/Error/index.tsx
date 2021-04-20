@@ -126,6 +126,7 @@ interface DefaultProps {
   showBackground: boolean;
   className: string;
   animate: boolean | undefined;
+  values: any;
 }
 
 interface Props extends DefaultProps {
@@ -173,7 +174,8 @@ type TFieldName =
   | 'homepage-info'
   | 'first_name'
   | 'last_name'
-  | 'email';
+  | 'email'
+  | 'invitation_token';
 
 export default class Error extends PureComponent<Props, State> {
   static defaultProps: DefaultProps = {
@@ -183,6 +185,7 @@ export default class Error extends PureComponent<Props, State> {
     showBackground: true,
     className: '',
     animate: true,
+    values: {},
   };
 
   constructor(props) {
@@ -239,6 +242,7 @@ export default class Error extends PureComponent<Props, State> {
       className,
       animate,
       id,
+      values,
     } = this.props;
 
     const dedupApiErrors =
@@ -296,7 +300,7 @@ export default class Error extends PureComponent<Props, State> {
                         const row = error?.row ?? null;
                         const rows = error?.rows ?? null;
 
-                        let values = {
+                        let otherValues = {
                           row: <strong>{row}</strong>,
                           rows: rows ? (
                             <strong>{rows.join(', ')}</strong>
@@ -304,7 +308,9 @@ export default class Error extends PureComponent<Props, State> {
                           value: <strong>'{value}'</strong>,
                         };
 
-                        values = payload ? { ...payload, ...values } : values;
+                        otherValues = payload
+                          ? { ...payload, ...otherValues }
+                          : otherValues;
 
                         if (value || row || rows) {
                           return (
@@ -315,7 +321,7 @@ export default class Error extends PureComponent<Props, State> {
 
                               <FormattedMessage
                                 {...errorMessage}
-                                values={values}
+                                values={{ ...values, ...otherValues }}
                               />
                             </ErrorListItem>
                           );
@@ -329,6 +335,7 @@ export default class Error extends PureComponent<Props, State> {
                             <FormattedMessage
                               {...errorMessage}
                               values={{
+                                ...values,
                                 ideasCount: (error as CLError).ideas_count,
                               }}
                             />

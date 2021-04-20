@@ -1,39 +1,27 @@
-import React, { PureComponent } from 'react';
-import { set, keys, difference, get } from 'lodash-es';
-import { adopt } from 'react-adopt';
+import React, { useState, useEffect } from 'react';
+import { withRouter, WithRouterProps } from 'react-router';
 import clHistory from 'utils/cl-router/history';
 import { API_PATH } from 'containers/App/constants';
 import request from 'utils/request';
 
 // components
 import { Input } from 'cl2-component-library';
+import PasswordInput from 'components/UI/PasswordInput';
 import Button from 'components/UI/Button';
-import PasswordInput, {
-  hasPasswordMinimumLength,
-} from 'components/UI/PasswordInput';
-import PasswordInputIconTooltip from 'components/UI/PasswordInput/PasswordInputIconTooltip';
 import Error from 'components/UI/Error';
 import { FormLabel } from 'components/UI/FormComponents';
-import Consent from 'components/SignUpIn/SignUp/Consent';
 import { Options, Option } from 'components/SignUpIn/styles';
+import Consent from 'components/SignUpIn/SignUp/Consent';
+import PhoneOrEmailInput from '../PhoneOrEmailInput';
+import PasswordInputIconTooltip from 'components/UI/PasswordInput/PasswordInputIconTooltip';
 
-// utils
-import { isValidEmail } from 'utils/validate';
-import { isCLErrorJSON } from 'utils/errorUtils';
-import { isNilOrError } from 'utils/helperUtils';
+// hooks
+import useWindowSize from 'hooks/useWindowSize';
+import useFeatureFlag from 'hooks/useFeatureFlag';
+import useLocale from 'hooks/useLocale';
 
 // services
 import { signUp } from 'services/auth';
-
-// resources
-import GetLocale, { GetLocaleChildProps } from 'resources/GetLocale';
-import GetWindowSize, {
-  GetWindowSizeChildProps,
-} from 'resources/GetWindowSize';
-import GetAppConfiguration, {
-  GetAppConfigurationChildProps,
-} from 'resources/GetAppConfiguration';
-import GetFeatureFlag from 'resources/GetFeatureFlag';
 
 // i18n
 import { InjectedIntlProps } from 'react-intl';
@@ -49,23 +37,49 @@ import styled from 'styled-components';
 import { viewportWidths } from 'utils/styleUtils';
 
 // typings
-import { CLErrorsJSON } from 'typings';
 import { ISignUpInMetaData } from 'components/SignUpIn';
-import { IUser } from 'services/users';
+import { CLError, CLErrors } from 'typings';
+import { IUserAttributes, IUser } from 'services/users';
 
-const Container = styled.div``;
+const Container = styled.div`
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+`;
 
 const Form = styled.form`
   width: 100%;
 `;
 
-const FormElement = styled.div`
-  width: 100%;
-  margin-bottom: 20px;
+const InlineFormElement = styled.div`
+  display: flex;
+
+  & > :first-child {
+    input {
+      position: relative;
+      border-right: 0px;
+      border-top-right-radius: 0px;
+      border-bottom-right-radius: 0px;
+    }
+  }
+
+  & > :last-child {
+    input {
+      position: relative;
+      border-top-left-radius: 0px;
+      border-bottom-left-radius: 0px;
+    }
+  }
+
+  input:focus {
+    z-index: 2;
+  }
 `;
 
-const StyledConsent = styled(Consent)`
-  padding-top: 10px;
+const FormElement = styled.div`
+  width: 100%;
+  margin-bottom: 16px;
+  position: relative;
 `;
 
 const ButtonWrapper = styled.div`
@@ -73,7 +87,7 @@ const ButtonWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 8px;
+  padding-top: 10px;
 `;
 
 const LabelContainer = styled.div`
@@ -86,455 +100,287 @@ const StyledFormLabel = styled(FormLabel)`
   margin-right: 5px;
 `;
 
+const StyledConsent = styled(Consent)`
+  padding-top: 10px;
+`;
+
 const StyledPasswordInputIconTooltip = styled(PasswordInputIconTooltip)`
   margin-bottom: 4px;
 `;
 
-type InputProps = {
+export interface InputProps {
   metaData: ISignUpInMetaData;
-  hasNextStep?: boolean;
-  onCompleted: (userId: string) => void;
-  onGoToSignIn: () => void;
-  onGoBack?: () => void;
+  onSignInCompleted: (userId: string) => void;
+  onGoToSignUp: () => void;
+  onGoToLogInOptions: () => void;
   className?: string;
-};
-
-interface DataProps {
-  locale: GetLocaleChildProps;
-  tenant: GetAppConfigurationChildProps;
-  windowSize: GetWindowSizeChildProps;
-  passwordLoginEnabled: boolean | null;
-  googleLoginEnabled: boolean | null;
-  facebookLoginEnabled: boolean | null;
-  azureAdLoginEnabled: boolean | null;
-  franceconnectLoginEnabled: boolean | null;
+  hasNextStep: boolean;
+  onGoToSignIn: () => void;
+  onCompleted: () => void;
+  onGoBack?: () => void;
 }
+
+type IUserForm = {
+  [P in keyof Partial<IUserAttributes>]: any | null;
+} & {
+  password: string | null;
+};
 
 interface Props extends InputProps, DataProps {}
 
-type State = {
-  token: string | null | undefined;
-  firstName: string | null;
-  lastName: string | null;
-  email: string | null | undefined;
-  password: string | null;
-  tacAccepted: boolean;
-  privacyAccepted: boolean;
-  processing: boolean;
-  invitationRedeemError: string | null;
-  firstNameError: string | null;
-  lastNameError: string | null;
-  emailError: string | null;
-  privacyError: boolean;
-  hasMinimumLengthError: boolean;
-  tacError: boolean;
-  unknownError: string | null;
-  apiErrors: CLErrorsJSON | null | Error;
+type IErrors = {
+  base: CLError[] | null;
+  email: CLError[] | null;
+  password: CLError[] | null;
+  mobile_phone_number: CLError[] | null;
+  mobile_phone_country_code: CLError[] | null;
+  mobile_phone: CLError[] | null;
+  terms_and_conditions_accepted: CLError[] | null;
+  privacy_policy_accepted: CLError[] | null;
+  first_name: CLError[] | null;
+  last_name: CLError[] | null;
+  invitation_token: CLError[] | null;
 };
 
-class PasswordSignup extends PureComponent<Props & InjectedIntlProps, State> {
-  firstNameInputElement: HTMLInputElement | null;
-  lastNameInputElement: HTMLInputElement | null;
-  emailInputElement: HTMLInputElement | null;
-  passwordInputElement: HTMLInputElement | null;
+function PasswordSignup({
+  onGoToLogInOptions,
+  metaData,
+  onGoToSignUp,
+  intl: { formatMessage },
+  onCompleted,
+  className,
+  hasNextStep,
+  onGoToSignIn,
+  onGoBack,
+}: Props & InjectedIntlProps & WithRouterProps): ReactElement {
+  const windowSize = useWindowSize();
+  const locale = useLocale();
+  const passwordLoginEnabled = useFeatureFlag('password_login');
+  const googleLoginEnabled = useFeatureFlag('google_login');
+  const facebookLoginEnabled = useFeatureFlag('facebook_login');
+  const azureAdLoginEnabled = useFeatureFlag('azure_ad_login');
+  const franceconnectLoginEnabled = useFeatureFlag('franceconnect_login');
 
-  constructor(props: Props & InjectedIntlProps) {
-    super(props);
-    this.state = {
-      token: props.metaData.token,
-      firstName: null,
-      lastName: null,
-      email: null,
-      password: null,
-      tacAccepted: false,
-      privacyAccepted: false,
-      processing: false,
-      invitationRedeemError: null,
-      firstNameError: null,
-      lastNameError: null,
-      emailError: null,
-      hasMinimumLengthError: false,
-      tacError: false,
-      privacyError: false,
-      unknownError: null,
-      apiErrors: null,
-    };
+  const [token, setToken] = useState<string | undefined>(metaData.token);
+  const [user, setUser] = useState<IUserForm>({
+    first_name: null,
+    last_name: null,
+    email: null,
+    password: null,
+    mobile_phone_number: null,
+    mobile_phone_country_code: null,
+    registration_method: null,
+    terms_and_conditions_accepted: false,
+    privacy_policy_accepted: false,
+    locale: locale,
+  });
 
-    this.firstNameInputElement = null;
-    this.lastNameInputElement = null;
-    this.emailInputElement = null;
-    this.passwordInputElement = null;
+  const [processing, setProcessing] = useState<boolean>(false);
+
+  const defaultErrors = {
+    base: null,
+    email: null,
+    first_name: null,
+    last_name: null,
+    password: null,
+    mobile_phone_number: null,
+    mobile_phone_country_code: null,
+    mobile_phone: null,
+    terms_and_conditions_accepted: null,
+    privacy_policy_accepted: null,
+    invitation_token: null,
+  };
+
+  const [errors, setErrors] = useState<IErrors>(defaultErrors);
+
+  const isInvitation = metaData.isInvitation;
+
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
+
+    try {
+      setProcessing(true);
+      await signUp(user, isInvitation, token);
+      trackEventByName(tracks.signUpEmailPasswordStepCompleted);
+      onCompleted();
+    } catch (errors) {
+      trackEventByName(tracks.signUpEmailPasswordStepFailed, { errors });
+      setErrors(errors.json.errors);
+    }
+    setProcessing(false);
   }
 
-  componentDidMount() {
+  function handleTokenChange(token: string) {
+    setToken(token);
+  }
+
+  function handleFirstNameChange(firstName: string) {
+    setUserField('first_name', firstName);
+  }
+
+  function handleLastNameChange(lastName: string) {
+    setUserField('last_name', lastName);
+  }
+
+  function handleTacAcceptedChange(tacAccepted: boolean) {
+    setUserField('terms_and_conditions_accepted', tacAccepted);
+  }
+
+  function handlePrivacyAcceptedChange(privacyAccepted: boolean) {
+    setUserField('privacy_policy_accepted', privacyAccepted);
+  }
+
+  function handleEmailChange(email: string) {
+    setUserField('email', email);
+    clearErrorsFor('email');
+  }
+
+  function handleMobilePhoneChange({
+    number,
+    countryCode,
+  }: {
+    number: string;
+    countryCode: string;
+  }) {
+    setUserField('mobile_phone_number', number);
+    setUserField('mobile_phone_country_code', countryCode);
+    clearErrorsFor('mobile_phone_number');
+    clearErrorsFor('mobile_phone_country_code');
+  }
+
+  function handlePasswordChange(password: string) {
+    setUserField('password', password);
+    clearErrorsFor('password');
+  }
+
+  function handleOnGoToSignIn(event: React.FormEvent) {
+    event.preventDefault();
+
+    if (metaData?.inModal || metaData?.noPushLinks) {
+      onGoToSignIn();
+    } else {
+      clHistory.push('/sign-in');
+    }
+  }
+
+  function goBackToSignUpOptions(event: React.MouseEvent) {
+    event.preventDefault();
+
+    if (metaData?.inModal || metaData?.noPushLinks) {
+      onGoBack?.();
+    } else {
+      clHistory.push('/sign-up');
+    }
+  }
+
+  function clearErrorsFor(errorKey: string) {
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      [errorKey]: null,
+    }));
+  }
+
+  function clearUserField(userField: string) {
+    setUser((prevUser) => ({
+      ...prevUser,
+      [userField]: null,
+    }));
+  }
+
+  function setUserField(userField: string, value: any) {
+    clearErrorsFor(userField);
+    setUser((prevUser) => ({
+      ...prevUser,
+      [userField]: value,
+    }));
+  }
+
+  useEffect(() => {
     trackEventByName(tracks.signUpEmailPasswordStepEntered);
 
-    const { metaData } = this.props;
+    return () => {
+      trackEventByName(tracks.signUpEmailPasswordStepExited);
+    };
+  }, []);
 
-    this.setState({ token: metaData?.token });
-
-    if (metaData?.token) {
+  useEffect(() => {
+    if (token) {
       request<IUser>(
-        `${API_PATH}/users/by_invite/${metaData.token}`,
+        `${API_PATH}/users/by_invite/${token}`,
         null,
         { method: 'GET' },
         null
       ).then((response) => {
-        this.setState({
-          firstName: response?.data?.attributes?.first_name || null,
-          lastName: response?.data?.attributes.last_name || null,
-          email: response?.data?.attributes?.email || null,
-        });
+        const {
+          email,
+          first_name,
+          last_name,
+          mobile_phone_number,
+          mobile_phone_country_code,
+          terms_and_conditions_accepted,
+          privacy_policy_accepted,
+        } = response?.data?.attributes;
+
+        setUser((prevUser) => ({
+          ...prevUser,
+          email,
+          first_name,
+          last_name,
+          mobile_phone_number,
+          mobile_phone_country_code,
+          terms_and_conditions_accepted,
+          privacy_policy_accepted,
+        }));
       });
     }
-  }
+  }, [token]);
 
-  componentWillMount() {
-    trackEventByName(tracks.signUpEmailPasswordStepExited);
-  }
+  const isDesktop = windowSize
+    ? windowSize.windowWidth > viewportWidths.largeTablet
+    : true;
 
-  handleTokenOnChange = (token: string) => {
-    this.setState({
-      token,
-      invitationRedeemError: null,
-      unknownError: null,
-    });
-  };
+  const enabledProviders = [
+    passwordLoginEnabled,
+    googleLoginEnabled,
+    facebookLoginEnabled,
+    azureAdLoginEnabled,
+    franceconnectLoginEnabled,
+  ].filter((provider) => provider === true);
 
-  handleFirstNameOnChange = (firstName: string) => {
-    this.setState((state) => ({
-      firstName,
-      firstNameError: null,
-      unknownError: null,
-      apiErrors: state.apiErrors
-        ? set(state.apiErrors, 'json.errors.first_name', null)
-        : null,
-    }));
-  };
+  return (
+    <Container id="e2e-sign-up-email-password-container" className={className}>
+      <>
+        <Form
+          id="e2e-signup-password"
+          onSubmit={handleSubmit}
+          noValidate={true}
+        >
+          {isInvitation && !metaData.token && (
+            <FormElement id="e2e-token-container">
+              <FormLabel labelMessage={messages.tokenLabel} htmlFor="token" />
+              <Input
+                id="token"
+                type="text"
+                value={token}
+                placeholder={formatMessage(messages.tokenPlaceholder)}
+                onChange={handleTokenChange}
+                autoFocus={
+                  !!(
+                    isDesktop &&
+                    isInvitation &&
+                    !metaData.token &&
+                    !metaData?.noAutofocus
+                  )
+                }
+              />
+              <Error
+                fieldName="invitation_token"
+                apiErrors={errors.invitation_token}
+              />
+            </FormElement>
+          )}
 
-  handleLastNameOnChange = (lastName: string) => {
-    this.setState((state) => ({
-      lastName,
-      lastNameError: null,
-      unknownError: null,
-      apiErrors: state.apiErrors
-        ? set(state.apiErrors, 'json.errors.last_name', null)
-        : null,
-    }));
-  };
-
-  handleEmailOnChange = (email: string) => {
-    this.setState((state) => ({
-      email,
-      emailError: null,
-      unknownError: null,
-      apiErrors: state.apiErrors
-        ? set(state.apiErrors, 'json.errors.email', null)
-        : null,
-    }));
-  };
-
-  handlePasswordOnChange = (password: string) => {
-    this.setState((state) => ({
-      password,
-      hasMinimumLengthError: false,
-      unknownError: null,
-      apiErrors: state.apiErrors
-        ? set(state.apiErrors, 'json.errors.password', null)
-        : null,
-    }));
-  };
-
-  handleOnGoToSignIn = (event: React.FormEvent) => {
-    event.preventDefault();
-
-    if (this.props.metaData?.inModal || this.props.metaData?.noPushLinks) {
-      this.props.onGoToSignIn();
-    } else {
-      clHistory.push('/sign-in');
-    }
-  };
-
-  handleTacAcceptedChange = (tacAccepted: boolean) => {
-    this.setState({
-      tacAccepted,
-      tacError: false,
-    });
-  };
-
-  handlePrivacyAcceptedChange = (privacyAccepted: boolean) => {
-    this.setState({
-      privacyAccepted,
-      privacyError: false,
-    });
-  };
-
-  handleFirstNameInputSetRef = (element: HTMLInputElement) => {
-    if (element) {
-      this.firstNameInputElement = element;
-    }
-  };
-  handleLastNameInputSetRef = (element: HTMLInputElement) => {
-    if (element) {
-      this.lastNameInputElement = element;
-    }
-  };
-
-  handleEmailInputSetRef = (element: HTMLInputElement) => {
-    if (element) {
-      this.emailInputElement = element;
-    }
-  };
-
-  handlePasswordInputSetRef = (element: HTMLInputElement) => {
-    if (element) {
-      this.passwordInputElement = element;
-    }
-  };
-
-  handleOnSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-
-    const { tenant } = this.props;
-    const { isInvitation } = this.props.metaData;
-    const { formatMessage } = this.props.intl;
-    const { locale } = this.props;
-    const {
-      token,
-      firstName,
-      lastName,
-      email,
-      password,
-      tacAccepted,
-      privacyAccepted,
-      processing,
-    } = this.state;
-    let invitationRedeemError =
-      isInvitation && !token ? formatMessage(messages.noTokenError) : null;
-    const phone =
-      !isNilOrError(tenant) && tenant.attributes.settings.password_login?.phone;
-    const hasEmailError = !phone && (!email || !isValidEmail(email));
-    const emailError = hasEmailError
-      ? !email
-        ? formatMessage(messages.noEmailError)
-        : formatMessage(messages.noValidEmailError)
-      : null;
-    const firstNameError = !firstName
-      ? formatMessage(messages.noFirstNameError)
-      : null;
-    const lastNameError = !lastName
-      ? formatMessage(messages.noLastNameError)
-      : null;
-    const hasMinimumLengthError =
-      typeof password === 'string'
-        ? hasPasswordMinimumLength(
-            password,
-            !isNilOrError(tenant)
-              ? tenant.attributes.settings.password_login?.minimum_length
-              : undefined
-          )
-        : true;
-    const tacError = !tacAccepted;
-    const privacyError = !privacyAccepted;
-
-    if (this.firstNameInputElement && firstNameError) {
-      this.firstNameInputElement.focus();
-    } else if (this.lastNameInputElement && lastNameError) {
-      this.lastNameInputElement.focus();
-    } else if (this.emailInputElement && emailError) {
-      this.emailInputElement.focus();
-    } else if (this.passwordInputElement && hasMinimumLengthError) {
-      this.passwordInputElement.focus();
-    }
-
-    const hasErrors = [
-      invitationRedeemError,
-      emailError,
-      firstNameError,
-      lastNameError,
-      hasMinimumLengthError,
-      tacError,
-      privacyError,
-    ].some((error) => error);
-
-    this.setState({
-      invitationRedeemError,
-      emailError,
-      firstNameError,
-      lastNameError,
-      hasMinimumLengthError,
-      tacError,
-      privacyError,
-    });
-
-    if (
-      !hasErrors &&
-      !processing &&
-      firstName &&
-      lastName &&
-      email &&
-      password &&
-      locale
-    ) {
-      try {
-        this.setState({ processing: true, unknownError: null });
-        const user = await signUp(
-          firstName,
-          lastName,
-          email,
-          password,
-          locale,
-          isInvitation,
-          token
-        );
-        this.setState({ processing: false });
-        trackEventByName(tracks.signUpEmailPasswordStepCompleted);
-        this.props.onCompleted(user.data.id);
-      } catch (errors) {
-        trackEventByName(tracks.signUpEmailPasswordStepFailed, { errors });
-
-        // custom error handling for invitation codes
-        if (get(errors, 'json.errors.base[0].error') === 'token_not_found') {
-          invitationRedeemError = formatMessage(messages.tokenNotFoundError);
-        }
-
-        if (get(errors, 'json.errors.base[0].error') === 'already_accepted') {
-          invitationRedeemError = formatMessage(
-            messages.tokenAlreadyAcceptedError
-          );
-        }
-
-        this.setState({
-          invitationRedeemError,
-          processing: false,
-          apiErrors: errors,
-        });
-      }
-    }
-  };
-
-  goBackToSignUpOptions = (event: React.MouseEvent) => {
-    event.preventDefault();
-
-    if (this.props.metaData?.inModal || this.props.metaData?.noPushLinks) {
-      this.props.onGoBack?.();
-    } else {
-      clHistory.push('/sign-up');
-    }
-  };
-
-  get emailErrors() {
-    const { tenant } = this.props;
-    const { apiErrors } = this.state;
-
-    return get(apiErrors, 'json.errors.email')?.map((error) => ({
-      ...error,
-      payload: {
-        supportEmail: isNilOrError(tenant)
-          ? 'support@citizenlab.co'
-          : tenant?.attributes?.settings?.core?.reply_to_email ||
-            'support@citizenlab.co',
-      },
-    }));
-  }
-
-  render() {
-    const {
-      tenant,
-      windowSize,
-      className,
-      hasNextStep,
-      passwordLoginEnabled,
-      googleLoginEnabled,
-      facebookLoginEnabled,
-      azureAdLoginEnabled,
-      franceconnectLoginEnabled,
-      metaData: { isInvitation },
-      intl: { formatMessage },
-    } = this.props;
-    const {
-      token,
-      firstName,
-      lastName,
-      email,
-      password,
-      processing,
-      invitationRedeemError,
-      firstNameError,
-      lastNameError,
-      emailError,
-      hasMinimumLengthError,
-      apiErrors,
-    } = this.state;
-    const phone =
-      !isNilOrError(tenant) && tenant.attributes.settings.password_login?.phone;
-    const enabledProviders = [
-      passwordLoginEnabled,
-      googleLoginEnabled,
-      facebookLoginEnabled,
-      azureAdLoginEnabled,
-      franceconnectLoginEnabled,
-    ].filter((provider) => provider === true);
-    const isDesktop = windowSize
-      ? windowSize > viewportWidths.largeTablet
-      : true;
-
-    let unknownApiError: string | null = null;
-
-    if (apiErrors) {
-      if (isCLErrorJSON(apiErrors)) {
-        // weirdly TS doesn't understand my typeguard.
-        const fieldKeys = keys((apiErrors as any).json.errors);
-
-        if (
-          difference(fieldKeys, [
-            'first_name',
-            'last_name',
-            'email',
-            'password',
-            'base',
-          ]).length > 0
-        ) {
-          unknownApiError = formatMessage(messages.unknownError);
-        }
-      } else {
-        unknownApiError = formatMessage(messages.unknownError);
-      }
-    }
-
-    return (
-      <Container
-        id="e2e-sign-up-email-password-container"
-        className={className}
-      >
-        <>
-          <Form
-            id="e2e-signup-password"
-            onSubmit={this.handleOnSubmit}
-            noValidate={true}
-          >
-            {isInvitation && !this.props.metaData.token && (
-              <FormElement id="e2e-token-container">
-                <FormLabel labelMessage={messages.tokenLabel} htmlFor="token" />
-                <Input
-                  id="token"
-                  type="text"
-                  value={token}
-                  placeholder={formatMessage(messages.tokenPlaceholder)}
-                  error={invitationRedeemError}
-                  onChange={this.handleTokenOnChange}
-                  autoFocus={
-                    !!(
-                      isDesktop &&
-                      isInvitation &&
-                      !this.props.metaData.token &&
-                      !this.props.metaData?.noAutofocus
-                    )
-                  }
-                />
-              </FormElement>
-            )}
-
+          <InlineFormElement>
             <FormElement id="e2e-firstName-container">
               <FormLabel
                 labelMessage={messages.firstNamesLabel}
@@ -543,23 +389,17 @@ class PasswordSignup extends PureComponent<Props & InjectedIntlProps, State> {
               <Input
                 id="firstName"
                 type="text"
-                value={firstName}
+                value={user.first_name}
                 placeholder={formatMessage(messages.firstNamesPlaceholder)}
-                error={firstNameError}
-                onChange={this.handleFirstNameOnChange}
+                onChange={handleFirstNameChange}
                 autocomplete="given-name"
                 autoFocus={
-                  !this.props.metaData?.noAutofocus &&
+                  !metaData?.noAutofocus &&
                   isDesktop &&
-                  (!isInvitation ||
-                    !!(isInvitation && this.props.metaData.token))
+                  (!isInvitation || !!(isInvitation && metaData.token))
                 }
-                setRef={this.handleFirstNameInputSetRef}
               />
-              <Error
-                fieldName={'first_name'}
-                apiErrors={get(apiErrors, 'json.errors.first_name')}
-              />
+              <Error fieldName="first_name" apiErrors={errors.first_name} />
             </FormElement>
 
             <FormElement id="e2e-lastName-container">
@@ -570,131 +410,92 @@ class PasswordSignup extends PureComponent<Props & InjectedIntlProps, State> {
               <Input
                 id="lastName"
                 type="text"
-                value={lastName}
+                value={user.last_name}
                 placeholder={formatMessage(messages.lastNamePlaceholder)}
-                error={lastNameError}
-                onChange={this.handleLastNameOnChange}
+                onChange={handleLastNameChange}
                 autocomplete="family-name"
-                setRef={this.handleLastNameInputSetRef}
               />
-              <Error
-                fieldName={'last_name'}
-                apiErrors={get(apiErrors, 'json.errors.last_name')}
-              />
+              <Error fieldName="last_name" apiErrors={errors.last_name} />
             </FormElement>
+          </InlineFormElement>
 
-            <FormElement id="e2e-email-container">
-              <FormLabel
-                labelMessage={
-                  phone ? messages.emailOrPhoneLabel : messages.emailLabel
-                }
-                htmlFor="email"
+          <FormElement>
+            <PhoneOrEmailInput
+              email={user.email}
+              phoneCountryCode={user.mobile_phone_country_code}
+              phoneNumber={user.mobile_phone_number}
+              onPhoneChange={handleMobilePhoneChange}
+              onEmailChange={handleEmailChange}
+              apiErrors={errors as CLErrors}
+            />
+          </FormElement>
+
+          <FormElement id="e2e-password-container">
+            <LabelContainer>
+              <StyledFormLabel
+                labelMessage={messages.passwordLabel}
+                htmlFor="signup-password-input"
               />
-              <Input
-                type="email"
-                id="email"
-                value={email}
-                placeholder={formatMessage(messages.emailPlaceholder)}
-                error={emailError}
-                onChange={this.handleEmailOnChange}
-                autocomplete="email"
-                setRef={this.handleEmailInputSetRef}
+              <StyledPasswordInputIconTooltip />
+            </LabelContainer>
+            <PasswordInput
+              id="password"
+              password={user.password}
+              placeholder={formatMessage(messages.passwordPlaceholder)}
+              onChange={handlePasswordChange}
+              autocomplete="new-password"
+              apiErrors={errors.password}
+            />
+          </FormElement>
+
+          <FormElement>
+            <StyledConsent
+              tacErrors={errors.terms_and_conditions_accepted}
+              privacyErrors={errors.privacy_policy_accepted}
+              onTacAcceptedChange={handleTacAcceptedChange}
+              onPrivacyAcceptedChange={handlePrivacyAcceptedChange}
+            />
+          </FormElement>
+
+          <FormElement>
+            <ButtonWrapper>
+              <Button
+                id="e2e-signup-password-submit-button"
+                processing={processing}
+                text={formatMessage(
+                  hasNextStep ? messages.nextStep : messages.signUp2
+                )}
+                onClick={handleSubmit}
               />
-              <Error fieldName={'email'} apiErrors={this.emailErrors} />
-            </FormElement>
+            </ButtonWrapper>
+          </FormElement>
 
-            <FormElement id="e2e-password-container">
-              <LabelContainer>
-                <StyledFormLabel
-                  labelMessage={messages.passwordLabel}
-                  htmlFor="signup-password-input"
-                />
-                <StyledPasswordInputIconTooltip />
-              </LabelContainer>
-              <PasswordInput
-                id="password"
-                password={password}
-                placeholder={formatMessage(messages.passwordPlaceholder)}
-                onChange={this.handlePasswordOnChange}
-                autocomplete="new-password"
-                errors={{ minimumLengthError: hasMinimumLengthError }}
-                setRef={this.handlePasswordInputSetRef}
+          <Error apiErrors={errors.base} />
+        </Form>
+
+        <Options>
+          <Option>
+            {enabledProviders.length > 1 ? (
+              <button onClick={goBackToSignUpOptions} className="link">
+                <FormattedMessage {...messages.backToSignUpOptions} />
+              </button>
+            ) : (
+              <FormattedMessage
+                {...messages.goToLogIn}
+                values={{
+                  goToOtherFlowLink: (
+                    <button onClick={handleOnGoToSignIn} className="link">
+                      {formatMessage(messages.logIn2)}
+                    </button>
+                  ),
+                }}
               />
-              <Error
-                fieldName={'password'}
-                apiErrors={get(apiErrors, 'json.errors.password')}
-              />
-            </FormElement>
-
-            <FormElement>
-              <StyledConsent
-                tacError={this.state.tacError}
-                privacyError={this.state.privacyError}
-                onTacAcceptedChange={this.handleTacAcceptedChange}
-                onPrivacyAcceptedChange={this.handlePrivacyAcceptedChange}
-              />
-            </FormElement>
-
-            <FormElement>
-              <ButtonWrapper>
-                <Button
-                  id="e2e-signup-password-submit-button"
-                  processing={processing}
-                  text={formatMessage(
-                    hasNextStep ? messages.nextStep : messages.signUp2
-                  )}
-                  onClick={this.handleOnSubmit}
-                />
-              </ButtonWrapper>
-            </FormElement>
-
-            <Error text={invitationRedeemError || unknownApiError} />
-          </Form>
-
-          <Options>
-            <Option>
-              {enabledProviders.length > 1 ? (
-                <button onClick={this.goBackToSignUpOptions} className="link">
-                  <FormattedMessage {...messages.backToSignUpOptions} />
-                </button>
-              ) : (
-                <FormattedMessage
-                  {...messages.goToLogIn}
-                  values={{
-                    goToOtherFlowLink: (
-                      <button
-                        onClick={this.handleOnGoToSignIn}
-                        className="link"
-                      >
-                        {formatMessage(messages.logIn2)}
-                      </button>
-                    ),
-                  }}
-                />
-              )}
-            </Option>
-          </Options>
-        </>
-      </Container>
-    );
-  }
+            )}
+          </Option>
+        </Options>
+      </>
+    </Container>
+  );
 }
 
-const Data = adopt<DataProps, InputProps>({
-  locale: <GetLocale />,
-  tenant: <GetAppConfiguration />,
-  windowSize: <GetWindowSize />,
-  passwordLoginEnabled: <GetFeatureFlag name="password_login" />,
-  googleLoginEnabled: <GetFeatureFlag name="google_login" />,
-  facebookLoginEnabled: <GetFeatureFlag name="facebook_login" />,
-  azureAdLoginEnabled: <GetFeatureFlag name="azure_ad_login" />,
-  franceconnectLoginEnabled: <GetFeatureFlag name="franceconnect_login" />,
-});
-
-const PasswordSignupWithHoC = injectIntl<Props>(PasswordSignup);
-
-export default (inputProps: InputProps) => (
-  <Data {...inputProps}>
-    {(dataprops) => <PasswordSignupWithHoC {...inputProps} {...dataprops} />}
-  </Data>
-);
+export default withRouter<Props>(injectIntl(PasswordSignup));

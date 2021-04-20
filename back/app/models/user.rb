@@ -75,6 +75,7 @@ class User < ApplicationRecord
   validates :education, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 8 }, allow_nil: true
 
   validates :invite_status, inclusion: { in: INVITE_STATUSES }, allow_nil: true
+  validates :terms_and_conditions_accepted, :privacy_policy_accepted, acceptance: true, unless: :invite_pending?
 
   validates :custom_field_values, json: {
     schema: -> { CustomFieldService.new.fields_to_json_schema(CustomField.with_resource_type('User')) },
@@ -375,7 +376,7 @@ class User < ApplicationRecord
   end
 
   def downcase_email!
-    email.downcase!
+    email&.downcase!
   end
 end
 

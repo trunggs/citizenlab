@@ -14,6 +14,9 @@ import messages from './messages';
 import styled from 'styled-components';
 import { fontSizes } from 'utils/styleUtils';
 
+// typings
+import { CLError } from 'typings';
+
 const Container = styled.div`
   display: flex;
   flex-direction: column;
@@ -49,8 +52,8 @@ const ConsentText = styled.div`
 `;
 
 interface Props {
-  tacError: boolean;
-  privacyError: boolean;
+  tacErrors: CLError[] | null;
+  privacyErrors: CLError[] | null;
   onTacAcceptedChange: (tacAccepted: boolean) => void;
   onPrivacyAcceptedChange: (privacyAccepted: boolean) => void;
   className?: string;
@@ -60,8 +63,8 @@ const Consent = memo<Props & InjectedIntlProps>(
   ({
     className,
     intl: { formatMessage },
-    tacError,
-    privacyError,
+    tacErrors,
+    privacyErrors,
     onTacAcceptedChange,
     onPrivacyAcceptedChange,
   }) => {
@@ -93,7 +96,10 @@ const Consent = memo<Props & InjectedIntlProps>(
                   values={{
                     link: (
                       <Link target="_blank" to="/pages/terms-and-conditions">
-                        <FormattedMessage {...messages.theTermsAndConditions} />
+                        <FormattedMessage
+                          {...messages.theTermsAndConditions}
+                          values={{ field: 'terms and conditions' }}
+                        />
                       </Link>
                     ),
                   }}
@@ -101,7 +107,7 @@ const Consent = memo<Props & InjectedIntlProps>(
               </ConsentText>
             }
           />
-          <Error text={tacError ? formatMessage(messages.tacError) : null} />
+          <Error apiErrors={tacErrors} />
         </CheckboxWrapper>
 
         <CheckboxWrapper id="e2e-privacy-container">
@@ -117,7 +123,10 @@ const Consent = memo<Props & InjectedIntlProps>(
                   values={{
                     link: (
                       <Link to="/pages/privacy-policy">
-                        <FormattedMessage {...messages.thePrivacyPolicy} />
+                        <FormattedMessage
+                          {...messages.thePrivacyPolicy}
+                          values={{ field: 'privacy policy' }}
+                        />
                       </Link>
                     ),
                   }}
@@ -125,9 +134,7 @@ const Consent = memo<Props & InjectedIntlProps>(
               </ConsentText>
             }
           />
-          <Error
-            text={privacyError ? formatMessage(messages.privacyError) : null}
-          />
+          <Error apiErrors={privacyErrors} />
         </CheckboxWrapper>
 
         <ConsentText>

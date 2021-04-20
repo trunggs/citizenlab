@@ -15,6 +15,8 @@ import { injectIntl } from 'utils/cl-intl';
 import { InjectedIntlProps } from 'react-intl';
 import messages from './messages';
 
+import { CLError } from 'typings';
+
 const Container = styled.div`
   position: relative;
   display: flex;
@@ -49,6 +51,7 @@ type PasswordScore = 0 | 1 | 2 | 3 | 4;
 
 interface Props extends WrapperProps {
   minimumPasswordLength: number;
+  apiErrors: CLError[] | null;
 }
 
 const PasswordInputComponent = ({
@@ -61,23 +64,13 @@ const PasswordInputComponent = ({
   minimumPasswordLength,
   isLoginPasswordInput,
   setRef,
-  errors,
+  apiErrors,
   intl: { formatMessage },
 }: Props & InjectedIntlProps) => {
   const locale = useLocale();
   const tenant = useAppConfiguration();
   const [showPassword, setShowPassword] = useState(false);
   const [passwordScore, setPasswordScore] = useState<PasswordScore>(0);
-  const { minimumLengthError, emptyError } = errors;
-  const minimumPasswordLengthErrorMessage = minimumLengthError
-    ? formatMessage(messages.minimumPasswordLengthErrorMessage, {
-        minimumPasswordLength,
-      })
-    : null;
-  const emptyPasswordErrorMessage = emptyError
-    ? formatMessage(messages.emptyPasswordError)
-    : null;
-
   const handleOnChange = (password: string) => {
     onChange(password);
   };
@@ -185,10 +178,7 @@ const PasswordInputComponent = ({
             </ScreenReaderOnly>
           </>
         )}
-        {isLoginPasswordInput && <Error text={emptyPasswordErrorMessage} />}
-        {!isLoginPasswordInput && (
-          <Error text={minimumPasswordLengthErrorMessage} />
-        )}
+        <Error apiErrors={apiErrors} />
       </>
     );
   }

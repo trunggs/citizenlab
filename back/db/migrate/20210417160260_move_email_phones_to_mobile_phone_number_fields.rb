@@ -1,5 +1,6 @@
 class MoveEmailPhonesToMobilePhoneNumberFields < ActiveRecord::Migration[6.0]
   def change
+    return unless AppConfiguration.instance_exists?
     return unless AppConfiguration.instance.settings('password_login', 'phone')
 
     pattern = AppConfiguration.instance.settings('password_login', 'phone_email_pattern')
