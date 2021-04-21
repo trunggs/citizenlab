@@ -90,6 +90,16 @@ export default function PhoneOrEmailInput({
         </>
       )}
 
+      {phoneLoginEnabled && selectedSignUpMethod === 'mobile_phone' ? (
+        <Error
+          marginTop="10px"
+          fieldName="mobile_phone"
+          apiErrors={apiErrors.mobile_phone}
+        />
+      ) : (
+        <Error marginTop="10px" fieldName="email" apiErrors={apiErrors.email} />
+      )}
+
       {phoneLoginEnabled && (
         <SignInMethodToggle onClick={changeSignInMethod}>
           <FormattedMessage
@@ -98,12 +108,6 @@ export default function PhoneOrEmailInput({
               : messages.usePhoneInstead)}
           />
         </SignInMethodToggle>
-      )}
-
-      {phoneLoginEnabled && selectedSignUpMethod === 'mobile_phone' ? (
-        <Error marginTop="10px" apiErrors={apiErrors.mobile_phone} />
-      ) : (
-        <Error marginTop="10px" apiErrors={apiErrors.email} />
       )}
     </>
   );

@@ -195,8 +195,8 @@ const AuthProviderButton = memo<Props>(
             <ConsentWrapper>
               <ConsentWrapperInner>
                 <Consent
-                  tacError={tacError}
-                  privacyError={privacyError}
+                  tacErrors={[]}
+                  privacyErrors={[]}
                   onTacAcceptedChange={handleTacAcceptedChange}
                   onPrivacyAcceptedChange={handlePrivacyAcceptedChange}
                 />

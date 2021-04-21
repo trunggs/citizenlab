@@ -227,7 +227,7 @@ function PasswordSignin({
               id="e2e-signin-password-submit-button"
             />
           </ButtonWrapper>
-          <Error marginTop="10px" apiErrors={errors.base} />
+          <Error marginTop="10px" apiErrors={errors.base} fieldName="sign_in" />
         </FormElement>
       </Form>
 

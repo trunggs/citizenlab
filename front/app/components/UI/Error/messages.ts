@@ -26,13 +26,37 @@ export default defineMessages({
     defaultMessage:
       'This field should be unique. Another instance with the same value already exists.',
   },
-  accepted: {
-    id: 'app.errors.generics.accepted',
-    defaultMessage: 'Please accept the {field} before continuing.',
+  terms_and_conditions_accepted: {
+    id: 'app.errors.terms_and_conditons.accepted',
+    defaultMessage: 'Please accept the terms and conditions.',
+  },
+  privacy_policy_accepted: {
+    id: 'app.errors.privacy_policy.accepted',
+    defaultMessage: 'Please accept the terms and conditions.',
   },
   locale_blank: {
     id: 'app.errors.locale_blank',
     defaultMessage: 'Please choose a language',
+  },
+  first_name_blank: {
+    id: 'app.errors.first_name.blank',
+    defaultMessage: 'Your first name cannot be empty.',
+  },
+  last_name_blank: {
+    id: 'app.errors.last_name.blank',
+    defaultMessage: 'Your last name cannot be empty.',
+  },
+  email_blank: {
+    id: 'app.errors.email.blank',
+    defaultMessage: 'Please provide an email.',
+  },
+  mobile_phone_blank: {
+    id: 'app.errors.mobile_phone.blank',
+    defaultMessage: 'Please provide a mobile phone number.',
+  },
+  password_blank: {
+    id: 'app.errors.password.blank',
+    defaultMessage: 'Your password cannot be empty.',
   },
   locale_inclusion: {
     id: 'app.errors.locale_inclusion',

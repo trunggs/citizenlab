@@ -41,6 +41,8 @@ import { ISignUpInMetaData } from 'components/SignUpIn';
 import { CLError, CLErrors } from 'typings';
 import { IUserAttributes, IUser } from 'services/users';
 
+const StyledError = styled(Error)``;
+
 const Container = styled.div`
   flex: 1 1 auto;
   display: flex;
@@ -280,13 +282,6 @@ function PasswordSignup({
     }));
   }
 
-  function clearUserField(userField: string) {
-    setUser((prevUser) => ({
-      ...prevUser,
-      [userField]: null,
-    }));
-  }
-
   function setUserField(userField: string, value: any) {
     clearErrorsFor(userField);
     setUser((prevUser) => ({
@@ -373,7 +368,7 @@ function PasswordSignup({
                   )
                 }
               />
-              <Error
+              <StyledError
                 fieldName="invitation_token"
                 apiErrors={errors.invitation_token}
               />
@@ -399,7 +394,10 @@ function PasswordSignup({
                   (!isInvitation || !!(isInvitation && metaData.token))
                 }
               />
-              <Error fieldName="first_name" apiErrors={errors.first_name} />
+              <StyledError
+                fieldName="first_name"
+                apiErrors={errors.first_name}
+              />
             </FormElement>
 
             <FormElement id="e2e-lastName-container">
@@ -415,7 +413,7 @@ function PasswordSignup({
                 onChange={handleLastNameChange}
                 autocomplete="family-name"
               />
-              <Error fieldName="last_name" apiErrors={errors.last_name} />
+              <StyledError fieldName="last_name" apiErrors={errors.last_name} />
             </FormElement>
           </InlineFormElement>
 
@@ -470,7 +468,7 @@ function PasswordSignup({
             </ButtonWrapper>
           </FormElement>
 
-          <Error apiErrors={errors.base} />
+          <StyledError apiErrors={errors.base} />
         </Form>
 
         <Options>

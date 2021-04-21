@@ -96,10 +96,7 @@ const Consent = memo<Props & InjectedIntlProps>(
                   values={{
                     link: (
                       <Link target="_blank" to="/pages/terms-and-conditions">
-                        <FormattedMessage
-                          {...messages.theTermsAndConditions}
-                          values={{ field: 'terms and conditions' }}
-                        />
+                        <FormattedMessage {...messages.theTermsAndConditions} />
                       </Link>
                     ),
                   }}
@@ -107,7 +104,7 @@ const Consent = memo<Props & InjectedIntlProps>(
               </ConsentText>
             }
           />
-          <Error apiErrors={tacErrors} />
+          <Error apiErrors={tacErrors} fieldName="terms_and_conditions" />
         </CheckboxWrapper>
 
         <CheckboxWrapper id="e2e-privacy-container">
@@ -123,10 +120,7 @@ const Consent = memo<Props & InjectedIntlProps>(
                   values={{
                     link: (
                       <Link to="/pages/privacy-policy">
-                        <FormattedMessage
-                          {...messages.thePrivacyPolicy}
-                          values={{ field: 'privacy policy' }}
-                        />
+                        <FormattedMessage {...messages.thePrivacyPolicy} />
                       </Link>
                     ),
                   }}
@@ -134,7 +128,7 @@ const Consent = memo<Props & InjectedIntlProps>(
               </ConsentText>
             }
           />
-          <Error apiErrors={privacyErrors} />
+          <Error apiErrors={privacyErrors} fieldName="privacy_policy" />
         </CheckboxWrapper>
 
         <ConsentText>

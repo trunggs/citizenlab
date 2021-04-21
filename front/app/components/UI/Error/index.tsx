@@ -175,7 +175,14 @@ type TFieldName =
   | 'first_name'
   | 'last_name'
   | 'email'
-  | 'invitation_token';
+  | 'password'
+  | 'invitation_token'
+  | 'terms_and_conditions'
+  | 'privacy_policy'
+  | 'mobile_number'
+  | 'invitation'
+  | 'sign_in'
+  | 'sign_up';
 
 export default class Error extends PureComponent<Props, State> {
   static defaultProps: DefaultProps = {
