@@ -17,7 +17,8 @@ app.use(compression());
 // Redirects API requests
 app.use('/web_api', (req, res) => {
   req
-    .pipe(request(`http://${API_HOST}:${API_PORT}/web_api/${req.url}`))
+    .pipe(request(`http://${API_HOST}/web_api/${req.url}`))
+    // .pipe(request(`http://${API_HOST}:${API_PORT}/web_api/${req.url}`))
     .pipe(res);
 });
 app.use('/admin_templates_api', (req, res) => {
@@ -30,11 +31,13 @@ app.use('/admin_templates_api', (req, res) => {
     .pipe(res);
 });
 app.use('/auth', (req, res) => {
-  req.pipe(request(`http://${API_HOST}:${API_PORT}/auth/${req.url}`)).pipe(res);
+  req.pipe(request(`http://${API_HOST}/auth/${req.url}`)).pipe(res);
+  // req.pipe(request(`http://${API_HOST}:${API_PORT}/auth/${req.url}`)).pipe(res);
 });
 app.use('/uploads', function (req, res) {
   req
-    .pipe(request(`http://${API_HOST}:${API_PORT}/uploads/${req.url}`))
+    .pipe(request(`http://${API_HOST}/uploads/${req.url}`))
+    // .pipe(request(`http://${API_HOST}:${API_PORT}/uploads/${req.url}`))
     .pipe(res);
 });
 app.use('/widgets', function (req, res) {

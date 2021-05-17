@@ -2,7 +2,8 @@
 .env-front
 
 back/engines/ee
-
+front/package-lock.json
 citizenlab.config.ee.json
+
 
 *.DS_Store
