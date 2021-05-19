@@ -1938,7 +1938,7 @@
   "app.containers.InitiutionsIndexPage.metaDescription": "Khám phá và hỗ trợ các đề xuất được thực hiện trong {orgName}",
   "app.containers.InitiutionsIndexPage.metaTitle": "Tất cả các đề xuất • {orgName}",
   "app.containers.InitiutionsIndexPage.postingDisabledExplanation": "Các đề xuất mới hiện đang bị treo. Vui lòng duyệt và cho mượn phản hồi cũng như hỗ trợ của bạn cho các đề xuất hiện có!",
-  "app.containers.InitiativeIndexPage.startInitiative": "Đăng đề xuất của bạn",
+  "app.containers.InitiativesIndexPage.startInitiative": "Đăng đề xuất của bạn",
   "app.containers.InitiutionsIndexPage.success": "thành công",
   "app.containers.InitiativeIndexPage.successStoryTitle": "Những câu chuyện thành công về đề xuất đầy cảm hứng",
   "app.containers.InitiutionsNewPage.elaborate": "Hãy dành thời gian để xây dựng đề xuất của bạn. Nếu cần, hãy nhập bản nháp trước rồi sao chép và dán nó vào đây. Ngay sau khi bạn đăng nó, những người khác sẽ có thể đọc nó và thời gian sẽ bắt đầu chạy. ",
