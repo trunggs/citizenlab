@@ -9,7 +9,7 @@ export const GRAPHQL_HOST =
   process.env.GRAPHQL_HOST ||
   (typeof window === 'undefined' ? 'localhost' : window.location.hostname);
 export const GRAPHQL_PORT = process.env.GRAPHQL_PORT || 5001;
-export const DEFAULT_LOCALE = 'en';
+export const DEFAULT_LOCALE = 'vi';
 
 // the locales we "support" :
 // platformBaseUrl/{oneOfTheseStrings}/{anything we have a route for}
@@ -17,8 +17,10 @@ export const DEFAULT_LOCALE = 'en';
 // - will replace the oneOfTheseStrings with authUser's locale if there is one
 // - else, will replace the oneOfTheseStrings with the one if the cookie if it exists
 // - else, will replce the oneOfTheseStrings with the first locale of the platfom (default)
+
 export const locales = [
   'en',
+  'vi',
   'fr',
   'de',
   'nl',
@@ -46,8 +48,10 @@ export const locales = [
   'sr-Latn',
 ];
 
+
 export const graphqlLocales = [
   'en',
+  'vi',
   'fr',
   'de',
   'nl',
@@ -76,8 +80,10 @@ export const graphqlLocales = [
 ];
 
 // the locales we really support, ie we have translations for these ect
+
 export const appLocalePairs = {
   en: 'English',
+  vi: 'Tiếng Việt',
   'en-GB': 'English (Great Britain)',
   'en-CA': 'English (Canada)',
   'fr-BE': 'Français (Belgique)',
@@ -99,8 +105,10 @@ export const appLocalePairs = {
   'sr-Latn': 'Serbian (Latin)',
 };
 
+
 export const appGraphqlLocalePairs = {
   en: 'en',
+  vi: 'vi',
   fr: 'fr',
   de: 'de',
   nl: 'nl',
@@ -130,6 +138,7 @@ export const appGraphqlLocalePairs = {
 
 export const shortenedAppLocalePairs = {
   en: 'English',
+  vi: 'Tiếng Việt',
   'en-GB': 'English',
   'en-CA': 'English',
   'fr-BE': 'Français',
@@ -152,8 +161,10 @@ export const shortenedAppLocalePairs = {
 };
 
 // see https://www.ge.com/digital/documentation/predix-services/c_custom_locale_support.html
+
 export const appLocalesMomentPairs = {
   'en-GB': 'en-gb',
+  vi: 'vi',
   'en-CA': 'en-ca',
   'fr-BE': 'fr',
   'fr-FR': 'fr',
