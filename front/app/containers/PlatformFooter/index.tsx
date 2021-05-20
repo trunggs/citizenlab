@@ -284,9 +284,9 @@ const PoweredBy = styled.div`
   display: flex;
   align-items: center;
   outline: none;
-  padding-right: 20px;
-  margin-right: 24px;
-  border-right: 2px solid ${colors.separation};
+  // padding-right: 20px;
+  // margin-right: 24px;
+  // border-right: 2px solid ${colors.separation};
 
   ${media.smallerThanMinTablet`
     flex-direction: column;
@@ -626,9 +626,9 @@ class PlatformFooter extends PureComponent<Props, State> {
 
           <Right>
             <PoweredBy>
-              {/* <PoweredByText>
+              <PoweredByText>
                 <FormattedMessage {...messages.poweredBy} />
-              </PoweredByText> */}
+              </PoweredByText>
               <CitizenlabLink href="https://www.citizenlab.co/" target="_blank">
                 <CitizenLabLogo
                   name="citizenlab-footer-logo"
