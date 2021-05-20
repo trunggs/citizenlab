@@ -284,9 +284,9 @@ const PoweredBy = styled.div`
   display: flex;
   align-items: center;
   outline: none;
-  // padding-right: 20px;
-  // margin-right: 24px;
-  // border-right: 2px solid ${colors.separation};
+  padding-right: 20px;
+  margin-right: 24px;
+  border-right: 2px solid ${colors.separation};
 
   ${media.smallerThanMinTablet`
     flex-direction: column;
@@ -637,7 +637,7 @@ class PlatformFooter extends PureComponent<Props, State> {
               </CitizenlabLink>
             </PoweredBy>
 
-            {/* <StyledSendFeedback showFeedbackText={smallerThanSmallTablet} /> */}
+            <StyledSendFeedback showFeedbackText={smallerThanSmallTablet} />
           </Right>
         </FooterContainer>
       </Container>
