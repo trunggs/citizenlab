@@ -626,9 +626,9 @@ class PlatformFooter extends PureComponent<Props, State> {
 
           <Right>
             <PoweredBy>
-              <PoweredByText>
+              {/* <PoweredByText>
                 <FormattedMessage {...messages.poweredBy} />
-              </PoweredByText>
+              </PoweredByText> */}
               <CitizenlabLink href="https://www.citizenlab.co/" target="_blank">
                 <CitizenLabLogo
                   name="citizenlab-footer-logo"
@@ -637,7 +637,7 @@ class PlatformFooter extends PureComponent<Props, State> {
               </CitizenlabLink>
             </PoweredBy>
 
-            <StyledSendFeedback showFeedbackText={smallerThanSmallTablet} />
+            {/* <StyledSendFeedback showFeedbackText={smallerThanSmallTablet} /> */}
           </Right>
         </FooterContainer>
       </Container>
