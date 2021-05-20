@@ -326,11 +326,11 @@ const CitizenlabLink = styled.a`
   cursor: pointer;
 `;
 
-const StyledSendFeedback = styled(SendFeedback)`
-  ${media.smallerThanMinTablet`
-    margin-top: 20px;
-  `}
-`;
+// const StyledSendFeedback = styled(SendFeedback)`
+//   ${media.smallerThanMinTablet`
+//     margin-top: 20px;
+//   `}
+// `;
 
 const ShortFeedbackFormModalFooter = styled.div`
   display: flex;
@@ -483,9 +483,9 @@ class PlatformFooter extends PureComponent<Props, State> {
       windowSize,
       insideModal,
     } = this.props;
-    const smallerThanSmallTablet = windowSize
-      ? windowSize <= viewportWidths.smallTablet
-      : false;
+    // const smallerThanSmallTablet = windowSize
+    //   ? windowSize <= viewportWidths.smallTablet
+    //   : false;
     const hasCustomizedA11yFooterLink = this.getHasCustomizedA11yFooterLink();
     const customizedA11yHref = this.getCustomizedA11yHref();
 
