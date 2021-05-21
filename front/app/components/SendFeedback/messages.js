@@ -7,6 +7,6 @@ export default defineMessages({
   },
   sendFeedbackLink: {
     id: 'app.components.sendFeedbackLink',
-    defaultMessage: 'https://citizenlabco.typeform.com/to/z7baRP?source={url}',
+    defaultMessage: 'https://forms.gle/z5NWeoZiZc91cEJRA',
   },
 });

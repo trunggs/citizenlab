@@ -652,7 +652,7 @@
   "app.components.app.containers.AdminPage.ProjectEdit.projectTerm": "Dự án",
   "app.components.app.containers.AdminPage.ProjectEdit.questionTerm": "Câu hỏi",
   "app.components.sendFeedback": "Phản hồi của bạn về nền tảng",
-  "app.components.sendFeedbackLink": "https://citizenlabco.typeform.com/to/z7baRP?source={url}",
+  "app.components.sendFeedbackLink": "https://forms.gle/z5NWeoZiZc91cEJRA",
   "app.container.IdeaForm.budgetIsTooBig": "Ngân sách được cung cấp quá lớn",
   "app.container.IdeaForm.budgetIsZeroError": "Vui lòng cung cấp ngân sách lớn hơn 0",
   "app.container.IdeaForm.budgetLabel": "Ngân sách",
