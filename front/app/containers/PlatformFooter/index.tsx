@@ -629,7 +629,7 @@ class PlatformFooter extends PureComponent<Props, State> {
               <PoweredByText>
                 <FormattedMessage {...messages.poweredBy} />
               </PoweredByText>
-              <CitizenlabLink href="https://www.citizenlab.co/" target="_blank">
+              <CitizenlabLink href="#">
                 <CitizenLabLogo
                   name="citizenlab-footer-logo"
                   title="CitizenLab"
