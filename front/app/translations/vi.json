@@ -1944,7 +1944,7 @@
   "app.containers.InitiativesNewPage.elaborate": "Hãy dành thời gian để xây dựng sáng kiến của bạn. Nếu cần, hãy nhập bản nháp trước rồi sao chép và dán nó vào đây. Ngay sau khi bạn đăng nó, những người khác sẽ có thể đọc nó và thời gian sẽ bắt đầu chạy. ",
   "app.containers.InitiativesNewPage.header": "Đăng sáng kiến của bạn ở đây và đưa sáng kiến đó vào chương trình làm việc của {styledOrgName}",
   "app.containers.InitiativesNewPage.locationNotFound": "Chúng tôi không thể tìm thấy địa chỉ gần đúng cho vị trí bạn đã chọn. Bạn có thể xác nhận là lưu vị trí này hoặc nhập địa chỉ để thay đổi.",
-  "app.containers.InitiativesNewPage.meosystemfulTitle": "Chọn một tiêu đề có ý nghĩa giải thích rõ ràng những gì sáng kiến của bạn đòi hỏi.",
+  "app.containers.InitiativesNewPage.meaningfulTitle": "Chọn một tiêu đề có ý nghĩa giải thích rõ ràng những gì sáng kiến của bạn đòi hỏi.",
   "app.containers.InitiativesNewPage.metaDescription": "Bắt đầu sáng kiến của riêng bạn và khiến tiếng nói của bạn được mọi người lắng nghe",
   "app.containers.InitiativesNewPage.metaTitle": "Bắt đầu sáng kiến • {orgName}",
   "app.containers.InitiativesNewPage.orgName": "{orgName}",
